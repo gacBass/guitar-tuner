@@ -126,21 +126,27 @@ const els = {
   micPill: document.getElementById("micPill"),
   micPillText: document.getElementById("micPillText"),
   tapOverlay: document.getElementById("tapOverlay"),
+  appTitle: document.getElementById("appTitle"),
+  gaugeTicks: document.getElementById("gaugeTicks"),
 };
 
 function setMicState(state) {
-  els.micPill.classList.remove("live", "muted", "denied");
+  els.micPill.classList.remove("live", "muted", "denied", "compact");
   if (state === "live") {
-    els.micPill.classList.add("live");
+    els.micPill.classList.add("live", "compact");
     els.micPillText.textContent = "Listening";
+    els.micPillText.style.display = "none";
   } else if (state === "muted") {
     els.micPill.classList.add("muted");
     els.micPillText.textContent = "Muted";
+    els.micPillText.style.display = "";
   } else if (state === "denied") {
     els.micPill.classList.add("denied");
     els.micPillText.textContent = "Mic blocked";
+    els.micPillText.style.display = "";
   } else {
     els.micPillText.textContent = "Starting…";
+    els.micPillText.style.display = "";
   }
 }
 
@@ -152,6 +158,56 @@ function hideTapOverlay() {
   els.tapOverlay.classList.remove("visible");
 }
 
+// ---- Radial gauge ticks -------------------------------------------------
+
+const GAUGE_TICKS = [
+  { cents: -50, label: "-50", major: true, color: "var(--flat-color)" },
+  { cents: -37.5, major: false },
+  { cents: -25, label: "-25", major: true },
+  { cents: -12.5, major: false },
+  { cents: 0, label: "0", major: true, center: true },
+  { cents: 12.5, major: false },
+  { cents: 25, label: "+25", major: true },
+  { cents: 37.5, major: false },
+  { cents: 50, label: "+50", major: true, color: "var(--sharp-color)" },
+];
+
+function renderGaugeTicks() {
+  els.gaugeTicks.innerHTML = "";
+  GAUGE_TICKS.forEach((t) => {
+    const angle = (t.cents / 50) * 45;
+    const wrap = document.createElement("div");
+    wrap.className = "radial-item";
+    wrap.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+
+    const dash = document.createElement("div");
+    dash.className = "tick-dash" + (t.major ? " major" : "") + (t.center ? " center" : "");
+    if (t.color) dash.style.background = t.color;
+    wrap.appendChild(dash);
+
+    if (t.label !== undefined) {
+      const label = document.createElement("span");
+      label.className = "tick-label" + (t.center ? " center" : "");
+      label.style.transform = `rotate(${-angle}deg)`;
+      label.textContent = t.label;
+      if (t.color) label.style.color = t.color;
+      wrap.appendChild(label);
+    }
+
+    els.gaugeTicks.appendChild(wrap);
+  });
+}
+renderGaugeTicks();
+
+// ---- Instrument selection -------------------------------------------------
+
+const TUNING_TITLES = {
+  guitar: "Guitar Tuner",
+  bass4: "Bass Tuner",
+  bass5: "Bass Tuner (5-String)",
+  chromatic: "Chromatic Tuner",
+};
+
 let currentTuningKey = "guitar";
 renderStringChips();
 
@@ -160,6 +216,7 @@ els.instButtons.forEach((btn) => {
     els.instButtons.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     currentTuningKey = btn.dataset.tuning;
+    els.appTitle.textContent = TUNING_TITLES[currentTuningKey];
     renderStringChips();
   });
 });

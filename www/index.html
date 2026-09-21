@@ -17,13 +17,11 @@
 <body>
   <main class="tuner">
     <header>
-      <div class="title-row">
-        <h1>Tuner</h1>
-        <button class="mic-pill" id="micPill" aria-label="Toggle microphone">
-          <span class="mic-dot" id="micDot"></span>
-          <span id="micPillText">Starting…</span>
-        </button>
-      </div>
+      <button class="mic-pill" id="micPill" aria-label="Toggle microphone">
+        <span class="mic-dot" id="micDot"></span>
+        <span id="micPillText">Starting…</span>
+      </button>
+      <h1 id="appTitle">Guitar Tuner</h1>
       <div class="instrument-select">
         <button class="inst-btn active" data-tuning="guitar">Guitar</button>
         <button class="inst-btn" data-tuning="bass4">Bass (4)</button>
@@ -34,13 +32,7 @@
 
     <section class="gauge-wrap">
       <div class="gauge">
-        <div class="gauge-scale">
-          <span class="tick flat">-50</span>
-          <span class="tick">-25</span>
-          <span class="tick center">0</span>
-          <span class="tick">+25</span>
-          <span class="tick sharp">+50</span>
-        </div>
+        <div class="gauge-ticks" id="gaugeTicks"></div>
         <div class="needle" id="needle"></div>
         <div class="gauge-pivot"></div>
       </div>

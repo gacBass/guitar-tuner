@@ -32,6 +32,7 @@ body {
 }
 
 header {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,23 +40,20 @@ header {
   margin-bottom: 16px;
 }
 
-.title-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--muted-color);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-color);
   text-transform: uppercase;
+  text-align: center;
 }
 
 .mic-pill {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -72,6 +70,10 @@ h1 {
 .mic-pill:hover {
   color: var(--text-color);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.mic-pill.compact {
+  padding: 7px;
 }
 
 .mic-dot {
@@ -141,43 +143,77 @@ h1 {
   overflow: hidden;
 }
 
-.gauge-scale {
+.gauge-ticks {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 8px;
-  color: var(--muted-color);
+  inset: 0;
+}
+
+.radial-item {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 0;
+  height: 130px;
+  transform-origin: bottom center;
+}
+
+.tick-dash {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 2px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+}
+
+.tick-dash.major {
+  height: 16px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.tick-dash.center {
+  width: 7px;
+  height: 7px;
+  left: -3.5px;
+  top: 3px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 10px 2px rgba(79, 209, 160, 0.65);
+}
+
+.tick-label {
+  position: absolute;
+  top: 20px;
+  left: -14px;
+  width: 28px;
+  text-align: center;
   font-size: 11px;
+  color: var(--muted-color);
+  display: inline-block;
 }
 
-.gauge-scale .tick {
-  align-self: flex-start;
-  margin-top: 4px;
+.tick-label.center {
+  color: var(--accent-green);
+  font-weight: 700;
 }
-
-.gauge-scale .flat { color: var(--flat-color); }
-.gauge-scale .sharp { color: var(--sharp-color); }
-.gauge-scale .center { color: var(--accent-green); font-weight: 700; }
 
 .needle {
   position: absolute;
   bottom: 6px;
   left: 50%;
-  width: 3px;
+  width: 10px;
   height: 130px;
-  background: var(--needle-color);
+  background: linear-gradient(to bottom, var(--needle-color), rgba(255, 255, 255, 0) 85%);
+  clip-path: polygon(50% 0%, 62% 18%, 56% 100%, 44% 100%, 38% 18%);
   transform-origin: bottom center;
   transform: translateX(-50%) rotate(0deg);
-  border-radius: 3px;
-  transition: transform 0.08s linear, background-color 0.15s ease, box-shadow 0.2s ease;
+  transition: transform 0.08s linear, filter 0.2s ease;
+  filter: drop-shadow(0 0 5px var(--needle-color));
 }
 
 .needle.in-tune {
-  box-shadow: 0 0 14px 2px var(--accent-green);
+  filter: drop-shadow(0 0 16px var(--accent-green));
 }
 
 .gauge-pivot {
