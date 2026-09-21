@@ -120,11 +120,37 @@ const els = {
   freq: document.getElementById("freq"),
   status: document.getElementById("status"),
   needle: document.getElementById("needle"),
-  startBtn: document.getElementById("startBtn"),
   a4Input: document.getElementById("a4Input"),
   strings: document.getElementById("strings"),
   instButtons: document.querySelectorAll(".inst-btn"),
+  micPill: document.getElementById("micPill"),
+  micPillText: document.getElementById("micPillText"),
+  tapOverlay: document.getElementById("tapOverlay"),
 };
+
+function setMicState(state) {
+  els.micPill.classList.remove("live", "muted", "denied");
+  if (state === "live") {
+    els.micPill.classList.add("live");
+    els.micPillText.textContent = "Listening";
+  } else if (state === "muted") {
+    els.micPill.classList.add("muted");
+    els.micPillText.textContent = "Muted";
+  } else if (state === "denied") {
+    els.micPill.classList.add("denied");
+    els.micPillText.textContent = "Mic blocked";
+  } else {
+    els.micPillText.textContent = "Starting…";
+  }
+}
+
+function showTapOverlay() {
+  els.tapOverlay.classList.add("visible");
+}
+
+function hideTapOverlay() {
+  els.tapOverlay.classList.remove("visible");
+}
 
 let currentTuningKey = "guitar";
 renderStringChips();
@@ -235,6 +261,9 @@ function processAudio(event) {
 }
 
 async function startTuner() {
+  setMicState("starting");
+  els.status.textContent = "Getting ready…";
+
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -244,7 +273,9 @@ async function startTuner() {
       },
     });
   } catch (err) {
-    els.status.textContent = "Microphone access denied";
+    setMicState("denied");
+    els.status.textContent = "Microphone blocked — tap to retry";
+    showTapOverlay();
     return;
   }
 
@@ -259,9 +290,16 @@ async function startTuner() {
 
   listening = true;
   recentNotes = [];
-  els.startBtn.textContent = "Stop Tuner";
-  els.startBtn.classList.add("listening");
+  setMicState("live");
   els.status.textContent = "Listening...";
+
+  // Some browsers (notably iOS Safari) start a fresh AudioContext suspended
+  // until a user gesture resumes it, even though getUserMedia succeeded.
+  if (audioContext.state === "suspended") {
+    showTapOverlay();
+  } else {
+    hideTapOverlay();
+  }
 }
 
 function stopTuner() {
@@ -283,16 +321,32 @@ function stopTuner() {
     audioContext = null;
   }
   listening = false;
-  els.startBtn.textContent = "Start Tuner";
-  els.startBtn.classList.remove("listening");
-  els.status.textContent = "Tap start and play a note";
+  setMicState("muted");
+  els.status.textContent = "Muted — tap the mic to resume";
   els.note.textContent = "–";
   els.freq.textContent = "0.0 Hz";
   els.needle.style.transform = "translateX(-50%) rotate(0deg)";
   document.querySelectorAll(".string-chip").forEach((c) => c.classList.remove("target"));
 }
 
-els.startBtn.addEventListener("click", () => {
+els.micPill.addEventListener("click", () => {
   if (listening) stopTuner();
   else startTuner();
 });
+
+els.tapOverlay.addEventListener("click", async () => {
+  hideTapOverlay();
+  if (audioContext && audioContext.state === "suspended") {
+    try {
+      await audioContext.resume();
+    } catch (err) {
+      /* ignore */
+    }
+  }
+  if (!listening) startTuner();
+});
+
+// Auto-start as soon as the page is ready — no explicit "Start" step needed
+// on platforms that allow it (most Android/desktop browsers). Platforms that
+// require a user gesture fall back to the tap overlay above.
+startTuner();
