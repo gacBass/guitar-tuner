@@ -190,7 +190,7 @@ function highlightNearestString(frequency) {
     }
   }
   document.querySelectorAll(".string-chip").forEach((chip) => {
-    chip.classList.toggle("target", chip.dataset.name === nearest.name);
+    chip.classList.toggle("active", chip.dataset.name === nearest.name);
   });
 }
 
@@ -213,16 +213,19 @@ function updateDisplay(frequency) {
   els.needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
 
   const absCents = Math.abs(cents);
-  let color = "#4fd1a0";
+  let color = "var(--accent-green)";
   let statusText = "In tune";
+  const inTune = absCents <= 5;
   if (absCents > 5 && absCents <= 15) {
-    color = "#f0c14b";
+    color = "var(--sharp-color)";
     statusText = cents > 0 ? "Slightly sharp" : "Slightly flat";
   } else if (absCents > 15) {
-    color = "#ef6a6a";
+    color = "var(--flat-color)";
     statusText = cents > 0 ? "Sharp" : "Flat";
   }
-  els.needle.style.background = color;
+  els.needle.style.setProperty("--needle-color", color);
+  els.needle.classList.toggle("in-tune", inTune);
+  els.note.classList.toggle("in-tune", inTune);
   els.status.textContent = statusText;
 
   highlightNearestString(frequency);
@@ -324,9 +327,12 @@ function stopTuner() {
   setMicState("muted");
   els.status.textContent = "Muted — tap the mic to resume";
   els.note.textContent = "–";
+  els.note.classList.remove("in-tune");
   els.freq.textContent = "0.0 Hz";
   els.needle.style.transform = "translateX(-50%) rotate(0deg)";
-  document.querySelectorAll(".string-chip").forEach((c) => c.classList.remove("target"));
+  els.needle.classList.remove("in-tune");
+  els.needle.style.removeProperty("--needle-color");
+  document.querySelectorAll(".string-chip").forEach((c) => c.classList.remove("active"));
 }
 
 els.micPill.addEventListener("click", () => {

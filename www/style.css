@@ -1,12 +1,12 @@
 :root {
-  --bg: #12141a;
-  --panel: #1c1f27;
-  --text: #eef0f4;
-  --muted: #8a90a2;
-  --accent: #4fd1a0;
-  --flat: #ef6a6a;
-  --sharp: #f0c14b;
-  --in-tune: #4fd1a0;
+  --bg-color: #12141a;
+  --surface-color: #1c1f27;
+  --text-color: #eef0f4;
+  --muted-color: #8a90a2;
+  --accent-green: #4fd1a0;
+  --flat-color: #ef6a6a;
+  --sharp-color: #f0c14b;
+  --needle-color: #8a90a2;
 }
 
 * { box-sizing: border-box; }
@@ -17,8 +17,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% -10%, #232838 0%, var(--bg) 60%);
-  color: var(--text);
+  background: radial-gradient(circle at 50% -10%, #232838 0%, var(--bg-color) 60%);
+  color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -26,7 +26,7 @@ body {
   width: 100%;
   max-width: 420px;
   padding: 24px;
-  background: var(--panel);
+  background: var(--surface-color);
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.4);
 }
@@ -51,7 +51,7 @@ h1 {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--muted);
+  color: var(--muted-color);
   text-transform: uppercase;
 }
 
@@ -61,7 +61,7 @@ h1 {
   gap: 6px;
   background: #262a35;
   border: 1px solid #333849;
-  color: var(--muted);
+  color: var(--muted-color);
   padding: 5px 10px 5px 8px;
   border-radius: 999px;
   font-size: 12px;
@@ -69,24 +69,27 @@ h1 {
   transition: all 0.15s ease;
 }
 
-.mic-pill:hover { color: var(--text); }
+.mic-pill:hover {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.06);
+}
 
 .mic-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--muted);
+  background: var(--muted-color);
   flex-shrink: 0;
 }
 
 .mic-pill.live .mic-dot {
-  background: var(--accent);
+  background: var(--accent-green);
   box-shadow: 0 0 0 0 rgba(79, 209, 160, 0.6);
   animation: pulse 1.8s infinite;
 }
 
-.mic-pill.muted .mic-dot { background: var(--muted); }
-.mic-pill.denied .mic-dot { background: var(--flat); }
+.mic-pill.muted .mic-dot { background: var(--muted-color); }
+.mic-pill.denied .mic-dot { background: var(--flat-color); }
 
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(79, 209, 160, 0.5); }
@@ -103,7 +106,7 @@ h1 {
 
 .inst-btn {
   background: #262a35;
-  color: var(--muted);
+  color: var(--muted-color);
   border: 1px solid #333849;
   padding: 6px 12px;
   border-radius: 999px;
@@ -112,12 +115,16 @@ h1 {
   transition: all 0.15s ease;
 }
 
-.inst-btn:hover { color: var(--text); }
+.inst-btn:hover:not(.active) {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
 
 .inst-btn.active {
-  background: var(--accent);
+  background: var(--accent-green);
   color: #0a1f16;
-  border-color: var(--accent);
+  border-color: var(--accent-green);
   font-weight: 600;
 }
 
@@ -143,7 +150,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   padding: 0 8px;
-  color: var(--muted);
+  color: var(--muted-color);
   font-size: 11px;
 }
 
@@ -152,9 +159,9 @@ h1 {
   margin-top: 4px;
 }
 
-.gauge-scale .flat { color: var(--flat); }
-.gauge-scale .sharp { color: var(--sharp); }
-.gauge-scale .center { color: var(--in-tune); font-weight: 700; }
+.gauge-scale .flat { color: var(--flat-color); }
+.gauge-scale .sharp { color: var(--sharp-color); }
+.gauge-scale .center { color: var(--accent-green); font-weight: 700; }
 
 .needle {
   position: absolute;
@@ -162,11 +169,15 @@ h1 {
   left: 50%;
   width: 3px;
   height: 130px;
-  background: var(--muted);
+  background: var(--needle-color);
   transform-origin: bottom center;
   transform: translateX(-50%) rotate(0deg);
   border-radius: 3px;
-  transition: transform 0.08s linear, background 0.15s ease;
+  transition: transform 0.08s linear, background-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.needle.in-tune {
+  box-shadow: 0 0 14px 2px var(--accent-green);
 }
 
 .gauge-pivot {
@@ -175,7 +186,7 @@ h1 {
   left: 50%;
   width: 12px;
   height: 12px;
-  background: var(--muted);
+  background: var(--muted-color);
   border-radius: 50%;
   transform: translate(-50%, 50%);
 }
@@ -186,15 +197,21 @@ h1 {
 }
 
 .note {
-  font-size: 64px;
-  font-weight: 700;
+  font-size: clamp(72px, 22vw, 112px);
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  transition: text-shadow 0.2s ease, color 0.2s ease;
+}
+
+.note.in-tune {
+  color: var(--accent-green);
+  text-shadow: 0 0 24px rgba(79, 209, 160, 0.45);
 }
 
 .freq {
   margin-top: 6px;
-  color: var(--muted);
+  color: var(--muted-color);
   font-size: 15px;
   font-variant-numeric: tabular-nums;
 }
@@ -202,7 +219,7 @@ h1 {
 .status {
   margin-top: 10px;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--muted-color);
   min-height: 16px;
 }
 
@@ -218,17 +235,17 @@ h1 {
   padding: 6px 10px;
   border-radius: 10px;
   background: #262a35;
-  color: var(--muted);
+  color: var(--muted-color);
   font-size: 13px;
   font-weight: 600;
   border: 1px solid #333849;
   transition: all 0.15s ease;
 }
 
-.string-chip.target {
+.string-chip.active {
   background: #2f3444;
-  color: var(--text);
-  border-color: var(--accent);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
 }
 
 .controls {
@@ -240,7 +257,7 @@ h1 {
 }
 
 .a4-label {
-  color: var(--muted);
+  color: var(--muted-color);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -251,10 +268,24 @@ h1 {
   width: 56px;
   background: #262a35;
   border: 1px solid #333849;
-  color: var(--text);
+  color: var(--text-color);
   border-radius: 6px;
   padding: 4px 6px;
   font-size: 13px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  transition: border-color 0.15s ease;
+}
+
+.a4-label input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+}
+
+.a4-label input::-webkit-outer-spin-button,
+.a4-label input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .tap-overlay {
@@ -273,7 +304,7 @@ h1 {
 
 .tap-card {
   text-align: center;
-  color: var(--text);
+  color: var(--text-color);
   padding: 32px;
 }
 
@@ -285,5 +316,5 @@ h1 {
 .tap-card p {
   margin: 0;
   font-size: 15px;
-  color: var(--muted);
+  color: var(--muted-color);
 }
