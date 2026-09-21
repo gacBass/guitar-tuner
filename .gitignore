@@ -1,0 +1,11 @@
+node_modules/
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/**/build/
+ios/App/Pods/
+ios/App/build/
+ios/App/App/public/
+*.log
+.DS_Store
