@@ -1,4 +1,4 @@
-const CACHE_NAME = "tuner-cache-v1";
+const CACHE_NAME = "tuner-cache-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -25,16 +25,18 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Network-first: while this app is actively changing, always prefer a fresh
+// copy so updates show up immediately. Cache is only a fallback for offline
+// use, not a way to speed up loads at the cost of staleness.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
+    fetch(event.request)
+      .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
-      }).catch(() => cached);
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
