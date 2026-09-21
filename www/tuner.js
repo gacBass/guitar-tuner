@@ -264,6 +264,7 @@ function updateDisplay(frequency) {
   const clampedCents = Math.max(-50, Math.min(50, cents));
 
   els.note.textContent = midiNoteToName(stableNote);
+  els.note.classList.remove("placeholder");
   els.freq.textContent = `${frequency.toFixed(1)} Hz`;
 
   const angle = (clampedCents / 50) * 45; // -45deg..45deg
@@ -385,6 +386,7 @@ function stopTuner() {
   els.status.textContent = "Muted — tap the mic to resume";
   els.note.textContent = "–";
   els.note.classList.remove("in-tune");
+  els.note.classList.add("placeholder");
   els.freq.textContent = "0.0 Hz";
   els.needle.style.transform = "translateX(-50%) rotate(0deg)";
   els.needle.classList.remove("in-tune");

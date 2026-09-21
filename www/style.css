@@ -240,6 +240,14 @@ h1 {
   transition: text-shadow 0.2s ease, color 0.2s ease;
 }
 
+/* At rest, a huge bold "–" renders as a solid bar rather than a
+   legible dash, so the idle placeholder uses a smaller, muted size. */
+.note.placeholder {
+  font-size: 40px;
+  font-weight: 600;
+  color: var(--muted-color);
+}
+
 .note.in-tune {
   color: var(--accent-green);
   text-shadow: 0 0 24px rgba(79, 209, 160, 0.45);
