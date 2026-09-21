@@ -321,10 +321,23 @@ function processAudio(event) {
   updateDisplay(result.frequency);
 }
 
-async function startTuner() {
-  setMicState("starting");
-  els.status.textContent = "Getting ready…";
+// A fresh AudioContext starts "suspended" on several mobile browsers/WebViews
+// until a user gesture resumes it. If we recreated the context on every
+// start/stop cycle, the resume would need to land *inside* the same gesture
+// as the mic-permission round trip — which, once an OS permission dialog is
+// involved, usually finishes too late for that gesture to still count,
+// re-arming the tap overlay in an endless loop. Keeping a single persistent
+// context (resumed synchronously, first thing, in the tap handler) avoids
+// that entirely: at most one tap is ever needed.
+function getAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioContext;
+}
 
+async function requestMicStream() {
+  if (mediaStream) return true;
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -333,30 +346,40 @@ async function startTuner() {
         autoGainControl: false,
       },
     });
+    return true;
   } catch (err) {
+    return false;
+  }
+}
+
+async function startTuner() {
+  setMicState("starting");
+  els.status.textContent = "Getting ready…";
+
+  const granted = await requestMicStream();
+  if (!granted) {
     setMicState("denied");
     els.status.textContent = "Microphone blocked — tap to retry";
     showTapOverlay();
     return;
   }
 
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  analyserSource = audioContext.createMediaStreamSource(mediaStream);
-  processor = audioContext.createScriptProcessor(BUFFER_SIZE, 1, 1);
-
-  analyserSource.connect(processor);
-  // ScriptProcessorNode requires a destination connection to fire in some browsers.
-  processor.connect(audioContext.destination);
-  processor.onaudioprocess = processAudio;
+  const ctx = getAudioContext();
+  if (!processor) {
+    analyserSource = ctx.createMediaStreamSource(mediaStream);
+    processor = ctx.createScriptProcessor(BUFFER_SIZE, 1, 1);
+    analyserSource.connect(processor);
+    // ScriptProcessorNode requires a destination connection to fire in some browsers.
+    processor.connect(ctx.destination);
+    processor.onaudioprocess = processAudio;
+  }
 
   listening = true;
   recentNotes = [];
   setMicState("live");
   els.status.textContent = "Listening...";
 
-  // Some browsers (notably iOS Safari) start a fresh AudioContext suspended
-  // until a user gesture resumes it, even though getUserMedia succeeded.
-  if (audioContext.state === "suspended") {
+  if (ctx.state === "suspended") {
     showTapOverlay();
   } else {
     hideTapOverlay();
@@ -377,10 +400,8 @@ function stopTuner() {
     mediaStream.getTracks().forEach((t) => t.stop());
     mediaStream = null;
   }
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
-  }
+  // The AudioContext itself is left running — recreating it would lose the
+  // "resumed by a user gesture" state and reintroduce the tap-loop above.
   listening = false;
   setMicState("muted");
   els.status.textContent = "Muted — tap the mic to resume";
@@ -399,15 +420,12 @@ els.micPill.addEventListener("click", () => {
   else startTuner();
 });
 
-els.tapOverlay.addEventListener("click", async () => {
+els.tapOverlay.addEventListener("click", () => {
+  // Must be the first synchronous thing in this handler — resuming after
+  // an await (e.g. following a mic-permission prompt) can land outside the
+  // gesture window on some browsers and silently do nothing.
+  getAudioContext().resume().catch(() => {});
   hideTapOverlay();
-  if (audioContext && audioContext.state === "suspended") {
-    try {
-      await audioContext.resume();
-    } catch (err) {
-      /* ignore */
-    }
-  }
   if (!listening) startTuner();
 });
 
